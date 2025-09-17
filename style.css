@@ -1,0 +1,59 @@
+/* Layout */
+* { box-sizing: border-box; }
+html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+.quad { position: relative; max-width: 1465px; margin: 0 auto; }
+.bg { display: block; width: 100%; height: auto; }
+
+/* Overlay spans the full composite height (both images) */
+.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+/* Bubbles — centered at left/top using transform */
+.bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: #00b5e2;
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  outline: none;
+}
+.bubble:hover { filter: brightness(1.05); }
+.bubble:focus-visible {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px #2079c3,
+    0 6px 18px rgba(0,0,0,.18);
+}
+
+/* Tooltips */
+.tooltip {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  transform: translate(14px, -50%) scale(0.98);
+  width: 250px;
+  padding: 12px 14px;
+  background: #fff;
+  color: #222;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  line-height: 1.25;
+  font-size: 14px;
+}
+.bubble:hover .tooltip,
+.bubble:focus .tooltip,
+.bubble:focus-visible .tooltip {
+  opacity: 1;
+  transform: translate(14px, -50%) scale(1);
+}
+.tooltip .cta { display: inline-block; margin-top: 8px; font-weight: 700; color: #002f6c; text-decoration: underline; }
+
+/* Optional: keep smaller bubbles tappable on touch devices */
+@media (hover: none) {
+  .tooltip { display: none; }
+  .bubble { min-width: 24px; min-height: 24px; }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CFA Bubble Quad</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="quad" aria-label="Job role discovery">
+    <!-- Background split across two images -->
+    <img class="bg" src="./top.jpg" alt="Bubble quad, top half" />
+    <img class="bg" src="./bottom.jpg" alt="Bubble quad, bottom half" />
+
+    <!-- Overlay with positioned bubbles -->
+    <div class="overlay" aria-hidden="false">
+      <!-- EXAMPLES — duplicate/adjust for each role.
+           Use the same % left/top and px diameter you already have. -->
+
+      <!-- CIO (40px @ 27%,64%) -->
+      <a class="bubble"
+         href="https://interactive.cfainstitute.org/bubble-quiz-CIO"
+         style="left:27%; top:64%; width:40px; height:40px; z-index:29;"
+         aria-label="CIO — Take Quiz">
+        <span class="tooltip">
+          <strong>CIO</strong><br />
+          3,800 Charterholders<br />
+          <em>Valuing markets & dynamic SAA.</em><br />
+          <span class="cta">Take Quiz ›</span>
+        </span>
+      </a>
+
+      <!-- Product Manager (26px @ 46%,38%) -->
+      <a class="bubble"
+         href="https://interactive.cfainstitute.org/bubble-quiz-Portfolio-manager"
+         style="left:46%; top:38%; width:26px; height:26px; z-index:31;"
+         aria-label="Product Manager — Take Quiz">
+        <span class="tooltip">
+          <strong>Product Manager</strong><br />
+          500 Charterholders<br />
+          <em>Design & operation of investment products.</em><br />
+          <span class="cta">Take Quiz ›</span>
+        </span>
+      </a>
+
+      <!-- Portfolio Manager (big 180px @ 5%,15%) -->
+      <a class="bubble"
+         href="https://interactive.cfainstitute.org/bubble-quiz-Portfolio-manager"
+         style="left:5%; top:15%; width:180px; height:180px; z-index:46;"
+         aria-label="Portfolio Manager — Take Quiz">
+        <span class="tooltip">
+          <strong>Portfolio Manager</strong><br />
+          33,000 Charterholders<br />
+          <em>Security & asset-class valuation, portfolio mgmt.</em><br />
+          <span class="cta">Take Quiz ›</span>
+        </span>
+      </a>
+
+      <!-- …add the rest of your roles here by copy/paste and editing
+           left:%, top:%, width/height:px, z-index, link, and tooltip text. -->
+    </div>
+  </main>
+</body>
+</html>
