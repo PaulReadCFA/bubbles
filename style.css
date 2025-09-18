@@ -53,14 +53,23 @@ html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto,
 .tooltip .cta { display: inline-block; margin-top: 8px; font-weight: 700; color: #002f6c; text-decoration: underline; }
 
 /* Optional: keep smaller bubbles tappable on touch devices */
-@media (hover: none) {
-  .tooltip { display: none; }
-  .bubble { min-width: 24px; min-height: 24px; }
-}
-.map { position: relative; max-width: 1465px; margin: 0 auto; }
-.map img { display: block; width: 100%; height: auto; }
-/* THIS is the crucial bit most people miss */
-.overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* optional: cursor + focus styles */
-.overlay a { outline: none; }
-.overlay a:focus-visible { box-shadow: 0 0 0 3px white, 0 0 0 5px #00b5e2; }
+  .map{ max-width:1465px; margin:0 auto; }
+  .panel-img{ display:block; width:100%; height:auto; }
+  .map .overlay{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .map{ position:relative; line-height:0; } /* kill any stray gaps */
+  .overlay a{
+    position:absolute; display:block; border-radius:50%; background:#00b5e2;
+    pointer-events:auto; cursor:pointer;
+  }
+
+  /* Accessible, reliable tooltips (works on hover/focus). Keep title as fallback. */
+  .overlay a::after{
+    content:attr(data-tip);
+    position:absolute; bottom:100%; left:50%; transform:translate(-50%,-6px);
+    white-space:nowrap; padding:4px 8px; border-radius:6px;
+    background:#002f6c; color:#fff; font:12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+  }
+  .overlay a:hover::after,
+  .overlay a:focus-visible::after{ opacity:1; transform:translate(-50%,-10px); }
+  .overlay a:focus-visible{ outline: none; box-shadow:0 0 0 3px #fff, 0 0 0 5px #00b5e2;}
