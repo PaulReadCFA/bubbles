@@ -1,96 +1,252 @@
-<!DOCTYPE html>
-<script>
-(function(){
-  function placeBubbles(){
-    const map = document.getElementById('map');
-    const overlay = document.getElementById('overlay');
-    const topImg = map.querySelector('img[data-panel="top"]');
-    const bottomImg = map.querySelector('img[data-panel="bottom"]');
-    const topH = topImg.getBoundingClientRect().height;
-    const bottomH = bottomImg.getBoundingClientRect().height;
-    const totalH = topH + bottomH;
-
-    overlay.querySelectorAll('a[data-x]').forEach(a=>{
-      const x = parseFloat(a.dataset.x);
-      const y = parseFloat(a.dataset.y);
-      const d = parseFloat(a.dataset.d);
-      const layer = (a.dataset.layer || 'top').toLowerCase();
-
-      // Convert "y within that image" -> "y within combined overlay"
-      let yPctOfTotal;
-      if(layer === 'top'){
-        yPctOfTotal = ((y/100) * topH) / totalH * 100;
-      }else{
-        yPctOfTotal = ((topH + (y/100) * bottomH) / totalH) * 100;
-      }
-
-      a.style.left = x + '%';
-      a.style.top = yPctOfTotal + '%';
-      a.style.width = d + 'px';
-      a.style.height = d + 'px';
-      a.setAttribute('tabindex','0'); // keyboard focus for tooltip
-    });
-  }
-  window.addEventListener('load', placeBubbles);
-  window.addEventListener('resize', placeBubbles);
-})();
-</script>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CFA Bubble Quad</title>
-  <link rel="stylesheet" href="./style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CFA Roles Bubble Overlay (Stacked)</title>
+<style>
+  :root{
+    --dot: #3a92d4;
+    --dot-hover: #2d85c9;
+    --tooltip-bg: #ffffff;
+    --tooltip-text: #0b2540;
+    --tooltip-shadow: rgba(0,0,0,.18);
+    --pin: #1f4c7c;
+  }
+  html,body {margin:0;padding:0;background:#f7f9fc;color:#111;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+  .board{max-width:1465px;margin:0 auto;}
+  .panel{position:relative; display:block;}
+  .panel + .panel{margin-top:0;}
+  .panel .bg{display:block;width:100%;height:auto;vertical-align:top;}
+  .overlay{position:absolute; inset:0; pointer-events:none;}
+  .dot{
+    position:absolute; transform:translate(-50%,-50%);
+    width:48px;height:48px;border-radius:50%;
+    background:var(--dot);
+    box-shadow:0 6px 14px -6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.35);
+    cursor:pointer; pointer-events:auto;
+    transition:box-shadow .15s ease, transform .15s ease, background .15s ease;
+    z-index:3;
+  }
+  .dot.small{width:24px;height:24px;}
+  .dot.med{width:36px;height:36px;}
+  .dot.lg{width:64px;height:64px;}
+  .dot.xl{width:110px;height:110px;}
+  .dot:hover{background:var(--dot-hover); transform:translate(-50%,-50%) scale(1.05); box-shadow:0 10px 24px -10px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.45);}
+  .tooltip{
+    position:absolute; min-width:240px; max-width:320px;
+    background:var(--tooltip-bg); color:var(--tooltip-text);
+    border-radius:12px; box-shadow:0 14px 36px -12px var(--tooltip-shadow);
+    padding:14px 16px 12px; z-index:6; pointer-events:auto;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .12s ease, transform .12s ease;
+  }
+  .tooltip.show{opacity:1; transform:translateY(0);}
+  .tt-title{font-weight:700; font-size:17px; margin:0 20px 6px 0;}
+  .tt-count{font-weight:700; margin:0 0 6px 0; font-size:14px; color:#12385e;}
+  .tt-body{font-size:14px; margin:0 0 10px 0;}
+  .tt-actions a{
+    display:inline-block; text-decoration:none;
+    font-weight:700; font-size:14px;
+    color:#003e7c; padding:6px 8px; border-radius:8px; background:#eff6ff;
+  }
+  .tt-close{appearance:none; border:0; background:transparent; color:#5078a5;
+    position:absolute; top:8px; right:8px; font-size:18px; line-height:1; cursor:pointer;}
+  .tt-pin{appearance:none; border:0; background:transparent; color:var(--pin);
+    position:absolute; top:8px; right:32px; font-size:16px; line-height:1; cursor:pointer;}
+  .panel{overflow:hidden;}
+  .dot, .tooltip {will-change: transform;}
+  @media (max-width: 800px){
+    .dot{width:36px;height:36px;}
+    .dot.lg{width:54px;height:54px;}
+    .dot.xl{width:88px;height:88px;}
+    .tooltip{min-width:200px; max-width:86vw;}
+  }
+</style>
 </head>
 <body>
-  <main class="quad" aria-label="Job role discovery">
-<div class="map" id="map">
-  <img class="panel-img" data-panel="top" src="top.jpg" alt="">
-  <img class="panel-img" data-panel="bottom" src="bottom.jpg" alt="">
-
-  <div class="overlay" id="overlay">
-    <!-- Mark which image each bubble belongs to via data-layer -->
-    <!-- Keep your original % x/y and pixel diameter d -->
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-CIO"
-       data-x="27" data-y="64" data-d="40" data-layer="top"
-       data-tip="CIO" title="CIO" aria-label="CIO"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-Portfolio-manager"
-       data-x="46" data-y="38" data-d="26" data-layer="top"
-       data-tip="Product Manager" title="Product Manager" aria-label="Product Manager"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-quant-analysis"
-       data-x="38" data-y="41" data-d="40" data-layer="top"
-       data-tip="Buy-side Quant Analyst" title="Buy-side Quant Analyst" aria-label="Buy-side Quant Analyst"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-ESG-analyst"
-       data-x="93" data-y="15" data-d="18" data-layer="top"
-       data-tip="ESG Analyst" title="ESG Analyst" aria-label="ESG Analyst"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-credit-analyst"
-       data-x="82" data-y="19" data-d="36" data-layer="top"
-       data-tip="Sell-side Credit Analyst" title="Sell-side Credit Analyst" aria-label="Sell-side Credit Analyst"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-Economist"
-       data-x="69" data-y="26" data-d="34" data-layer="top"
-       data-tip="Economist" title="Economist" aria-label="Economist"></a>
-
-    <a href="https://interactive.cfainstitute.org/Bubble-Quiz-Sales"
-       data-x="61" data-y="20" data-d="55" data-layer="top"
-       data-tip="Sales" title="Sales" aria-label="Sales"></a>
-
-    <a href="https://interactive.cfainstitute.org/bubble-quiz-central-banks"
-       data-x="51" data-y="26" data-d="25" data-layer="top"
-       data-tip="Central Banks" title="Central Banks" aria-label="Central Banks"></a>
-
-    <a href="https://interactive.cfainstitute.org/Bubble-Quiz-Regulator"
-       data-x="45" data-y="22" data-d="36" data-layer="top"
-       data-tip="Regulators" title="Regulators" aria-label="Regulators"></a>
-
-    <!-- Add the rest; for bubbles that belong on the BOTTOM image, set data-layer="bottom" -->
+  <div class="board">
+    <section class="panel" id="panel-top">
+      <img class="bg" src="https://iuploads.scribblecdn.net/38e07bd3-81f4-402f-8d18-c8c469c685ae/global/imagelib/uncategorized/bubble_quad_%E2%80%93_top.jpg?v=12212020150218" alt="" />
+      <div class="overlay" data-panel="top"></div>
+    </section>
+    <section class="panel" id="panel-bottom">
+      <img class="bg" src="https://iuploads.scribblecdn.net/38e07bd3-81f4-402f-8d18-c8c469c685ae/global/imagelib/uncategorized/bubble_quad_%E2%80%93_bottom-885317ae94f5efd9d2cf32dc66f9124b90cf30bb.jpg?v=12212020150159" alt="" />
+      <div class="overlay" data-panel="bottom"></div>
+    </section>
   </div>
-</div>
 
-  </main>
+<script>
+const bubblesTop = [
+  {title:"Portfolio Manager (incl. hedge fund manager)", count:"33,000 Charterholders", body:"Almost half of portfolio managers in the world are CFA Charterholders.", href:"https://interactive.cfainstitute.org/bubble-quiz-Portfolio-manager", top:20, left:9, size:"xl"},
+  {title:"CIO", count:"3,800 Charterholders", body:"The CFA Program teaches CIOs how to value entire markets and indices and conduct dynamic strategic asset allocation.", href:"https://interactive.cfainstitute.org/bubble-quiz-CIO", top:34, left:18, size:"med"},
+  {title:"Product Manager", count:"500 Charterholders", body:"Build, develop and oversee investment products and processes. Integrate investment processes with sales, marketing, and service.", href:"https://interactive.cfainstitute.org/bubble-quiz-Portfolio-manager", top:38, left:46, size:"small"},
+  {title:"Buy-side Quant Analyst", count:"1,000 Charterholders", body:"The CFA Program covers instruments and data that quant analysts use as raw materials.", href:"https://interactive.cfainstitute.org/bubble-quiz-quant-analysis", top:41, left:38, size:"lg"},
+  {title:"ESG Analyst", count:"300 Charterholders", body:"The CFA Program teaches the applications of ESG analysis across asset classes and role types.", href:"https://interactive.cfainstitute.org/bubble-quiz-ESG-analyst", top:15, left:93, size:"small"},
+  {title:"Sell-side Credit Analyst", count:"2,000 Charterholders", body:"From creditworthiness to pricing debt, the CFA Program covers the full credit toolkit.", href:"https://interactive.cfainstitute.org/bubble-quiz-credit-analyst", top:19, left:82, size:"lg"},
+  {title:"Economist", count:"700 Charterholders", body:"Coverage spans country analysis, interest & inflation forecasting, and currency valuation.", href:"https://interactive.cfainstitute.org/bubble-quiz-Economist", top:26, left:69, size:"med"},
+  {title:"Sales", count:"4,200 Charterholders", body:"The CFA Program teaches workflows of the most common institutional clients.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Sales", top:20, left:61, size:"xl"},
+  {title:"Central Banks", count:"300 Charterholders", body:"How rates and inflation impact markets through the yield curve.", href:"https://interactive.cfainstitute.org/bubble-quiz-central-banks", top:26, left:51, size:"small"},
+  {title:"Regulators", count:"1,100 Charterholders", body:"Understand key role types and workflows that are regulated.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Regulator", top:22, left:45, size:"med"},
+  {title:"Buy-side Credit Analyst", count:"1,400 Charterholders", body:"Analyze issuers & structured credit, seek relative value, and assess risk/reward in extending credit.", href:"https://interactive.cfainstitute.org/bubble-quiz-credit-analyst", top:23, left:37, size:"lg"},
+  {title:"Compliance", count:"500 Charterholders", body:"Learn market actors’ roles and how regulation & the Code of Ethics affect them.", href:"https://interactive.cfainstitute.org/bubble-quiz-compliance", top:18, left:30, size:"small"},
+  {title:"Relationship Manager", count:"5,600 Charterholders", body:"Client-first role: understand needs, articulate solutions, and match investments.", href:"https://interactive.cfainstitute.org/bubble-quiz-relationship-manager", top:50, left:32, size:"xl"},
+  {title:"Investment Strategist", count:"5,900 Charterholders", body:"Beyond single-security valuation to asset-class and index valuation.", href:"https://interactive.cfainstitute.org/bubble-quiz-investment-strategies", top:42, left:64, size:"xl"},
+  {title:"Manager of Managers", count:"4,800 Charterholders", body:"Select, monitor, and allocate to external managers; qualitative and quantitative due diligence.", href:"https://interactive.cfainstitute.org/bubble-quiz-managers", top:52, left:44, size:"lg"},
+  {title:"Sell-side Trader", count:"4,000 Charterholders", body:"Understand how clients value the securities being traded.", href:"https://interactive.cfainstitute.org/bubble-quiz-trader", top:55, left:55, size:"xl"},
+  {title:"Investment Consultant", count:"3,000 Charterholders", body:"Waterfront coverage of asset classes & valuation techniques.", href:"https://interactive.cfainstitute.org/bubble-quiz-investment-consultant", top:48, left:86, size:"lg"},
+  {title:"Sell-side Equity Research Analyst", count:"18,000 Charterholders", body:"Cover industries, build models, and pitch mispriced equities.", href:"https://interactive.cfainstitute.org/bubble-quiz-Equity-analyst", top:54, left:82, size:"xl"}
+];
+const bubblesBottom = [
+  {title:"Buy-side Trader", count:"1,000 Charterholders", body:"Executes transactions using market data, seeking best execution and minimal impact.", href:"https://interactive.cfainstitute.org/bubble-quiz-trader", top:87, left:7, size:"med"},
+  {title:"Performance Analyst", count:"1,600 Charterholders", body:"Analyze outputs of the portfolio process to create better-rounded insights.", href:"https://interactive.cfainstitute.org/bubble-quiz-Performance-analyst", top:79, left:12, size:"lg"},
+  {title:"Buy-side Equity Analyst", count:"4,000 Charterholders", body:"The largest single training program globally for equity analysts.", href:"https://interactive.cfainstitute.org/bubble-quiz-Equity-analyst", top:80, left:24, size:"xl"},
+  {title:"Private Wealth Management", count:"9,300 Charterholders", body:"The very first CFA exam question (1966) was a private wealth question.", href:"https://interactive.cfainstitute.org/bubble-quiz-Private-wealth-management-Compliance", top:67, left:33, size:"xl"},
+  {title:"Market Data & Indices", count:"2,000 Charterholders", body:"Key workflows of primary users of market data platforms and indices.", href:"https://interactive.cfainstitute.org/bubble-quiz-mdi", top:95, left:45, size:"lg"},
+  {title:"FinTech", count:"300 Charterholders", body:"Design innovative financial technology products and promote adoption.", href:"https://interactive.cfainstitute.org/bubble-quiz-fintech", top:96, left:53, size:"small"},
+  {title:"Sell-side Data Scientist", count:"300 Charterholders", body:"How DS toolkits are most commonly used within institutional finance.", href:"https://interactive.cfainstitute.org/bubble-quiz-Data-scientist", top:87, left:93, size:"small"},
+  {title:"Broker-dealer Risk", count:"6,000 Charterholders", body:"Oversee aggregated trading-book risk; stress testing and scenario analysis.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Risk-Manger", top:74, left:61, size:"xl"},
+  {title:"Sell-side Quant Analyst", count:"1,000 Charterholders", body:"Build & deliver quantitative models and decision tools.", href:"https://interactive.cfainstitute.org/bubble-quiz-quant-analysis", top:40, left:78, size:"med"},
+  {title:"Buy-side Data Scientist", count:"300 Charterholders", body:"Analyze datasets and build tools to enhance the investment process.", href:"https://interactive.cfainstitute.org/bubble-quiz-Data-scientist", top:75, left:6, size:"small"},
+  {title:"Buy-side Risk", count:"2,500 Charterholders", body:"Optimize portfolios with risk modelling; stress/scenario analysis.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Risk-Manger", top:31, left:31, size:"lg"},
+  {title:"Exchanges", count:"300 Charterholders", body:"Users & workflows related to securities on exchanges.", href:"https://interactive.cfainstitute.org/bubble-quiz-exchanges", top:5, left:52, size:"small"},
+  {title:"Accountant/Auditor", count:"4,300 Charterholders", body:"See how your outputs power industry analysis and valuation.", href:"https://interactive.cfainstitute.org/bubble-quiz-accounting", top:36, left:78, size:"xl"},
+  {title:"Strategy Consulting", count:"300 Charterholders", body:"CFA teaches the outside-in analytical perspective on corporations.", href:"https://interactive.cfainstitute.org/bubble-quiz-strategy-consulting", top:14, left:87, size:"small"},
+  {title:"Corporate Finance/M&A", count:"8,400 Charterholders", body:"How companies make money, choose capital structures, and approach inorganic growth.", href:"https://interactive.cfainstitute.org/bubble-quiz-CorporatefinanceMA", top:40, left:62, size:"xl"},
+  {title:"Equity Capital Markets", count:"500 Charterholders", body:"Corporate finance + equity valuation = ECM fundamentals.", href:"https://interactive.cfainstitute.org/bubble-quiz-Equity-capital-markets", top:29, left:59, size:"small"},
+  {title:"Debt Capital Markets", count:"100 Charterholders", body:"Grounding in the fixed income business.", href:"https://interactive.cfainstitute.org/bubble-quiz-Debt-capital-markets", top:13, left:64, size:"small"},
+  {title:"Academics", count:"1,700 Charterholders", body:"A window into cutting edge institutional finance practice.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Academic", top:73, left:47, size:"med"},
+  {title:"Corporate Development & Strategy", count:"2,000 Charterholders", body:"Apply valuation toolkits to corporate strategic decisions.", href:"https://interactive.cfainstitute.org/bubble-quiz-cds", top:24, left:38, size:"med"},
+  {title:"Venture Capital", count:"300 Charterholders", body:"VCs share common skills with equity analysts; CFA complements transactions.", href:"https://interactive.cfainstitute.org/Bubble-Quiz-Venture-Capital", top:75, left:8, size:"small"},
+  {title:"Treasurer", count:"300 Charterholders", body:"Learn the key instruments treasurers invest in and how to value them.", href:"https://interactive.cfainstitute.org/bubble-quiz-treasury", top:75, left:35, size:"small"},
+  {title:"CFO", count:"3,700 Charterholders", body:"CFOs connect corporations and the investment community; learn how outputs drive decisions.", href:"https://interactive.cfainstitute.org/bubble-quiz-CFO", top:34, left:13, size:"lg"},
+  {title:"Investor Relations", count:"500 Charterholders", body:"Understand the mindset of analysts and portfolio managers across the table.", href:"https://interactive.cfainstitute.org/bubble-quiz-investor-relations", top:11, left:19, size:"med"},
+  {title:"Private Equity General Partner", count:"8,000 Charterholders", body:"PE GP role overlaps heavily with equity analysis; CFA adds depth.", href:"https://interactive.cfainstitute.org/bubble-quiz-Private-equity-general-partner", top:38, left:25, size:"xl"},
+  {title:"CEO", count:"4,900 Charterholders", body:"Learn how markets interpret your words, actions, and performance.", href:"https://interactive.cfainstitute.org/bubble-quiz-ceo", top:11, left:6, size:"lg"}
+];
+
+const panels = {
+  top: document.querySelector('.overlay[data-panel="top"]'),
+  bottom: document.querySelector('.overlay[data-panel="bottom"]')
+};
+
+function makeDot(b, panelEl){
+  const el = document.createElement('button');
+  el.className = `dot ${b.size || ''}`;
+  el.style.top = b.top + '%';
+  el.style.left = b.left + '%';
+  el.setAttribute('aria-label', b.title);
+  el.dataset.title = b.title;
+  el.dataset.count = b.count || '';
+  el.dataset.body = b.body || '';
+  el.dataset.href = b.href || '#';
+  panelEl.appendChild(el);
+  return el;
+}
+
+function makeTooltip(){
+  const tip = document.createElement('div');
+  tip.className = 'tooltip';
+  tip.innerHTML = `
+    <button class="tt-close" aria-label="Close">×</button>
+    <button class="tt-pin" aria-label="Pin">📌</button>
+    <h3 class="tt-title"></h3>
+    <div class="tt-count"></div>
+    <div class="tt-body"></div>
+    <div class="tt-actions"><a target="_blank" rel="noopener">Take Quiz &gt;</a></div>
+  `;
+  return tip;
+}
+
+const tips = { top: makeTooltip(), bottom: makeTooltip() };
+panels.top.appendChild(tips.top);
+panels.bottom.appendChild(tips.bottom);
+
+let pinned = { top: null, bottom: null };
+let hideTimer = { top: null, bottom: null };
+
+function showTooltip(panelKey, dot, pin=false){
+  const tip = tips[panelKey];
+  const panel = panels[panelKey];
+
+  tip.querySelector('.tt-title').textContent = dot.dataset.title || '';
+  tip.querySelector('.tt-count').textContent = dot.dataset.count || '';
+  tip.querySelector('.tt-body').textContent = dot.dataset.body || '';
+  const link = tip.querySelector('.tt-actions a');
+  link.href = dot.dataset.href || '#';
+
+  const dRect = dot.getBoundingClientRect();
+  const pRect = panel.getBoundingClientRect();
+
+  let top = dRect.top - pRect.top - 10;
+  let left = dRect.left - pRect.left;
+
+  tip.style.visibility = 'hidden';
+  tip.style.display = 'block';
+  tip.classList.add('show');
+  const tRect = tip.getBoundingClientRect();
+
+  left = left - tRect.width/2;
+  let aboveTop = top - tRect.height - 12;
+  let finalTop = aboveTop < 4 ? (dRect.bottom - pRect.top) + 12 : aboveTop;
+
+  if (left < 6) left = 6;
+  const maxLeft = pRect.width - tRect.width - 6;
+  if (left > maxLeft) left = maxLeft;
+
+  tip.style.top = finalTop + 'px';
+  tip.style.left = left + 'px';
+  tip.style.visibility = '';
+  tip.classList.add('show');
+
+  tip.onmouseenter = () => clearTimeout(hideTimer[panelKey]);
+  tip.onmouseleave = () => { if (!pinned[panelKey]) hideLater(panelKey); };
+
+  tip.querySelector('.tt-close').onclick = (e) => { e.stopPropagation(); pinned[panelKey] = null; hideNow(panelKey); };
+  tip.querySelector('.tt-pin').onclick = (e) => { e.stopPropagation(); pinned[panelKey] = (pinned[panelKey] === dot ? null : dot); };
+
+  if (pin) pinned[panelKey] = dot;
+}
+
+function hideLater(panelKey){
+  clearTimeout(hideTimer[panelKey]);
+  hideTimer[panelKey] = setTimeout(() => hideNow(panelKey), 140);
+}
+function hideNow(panelKey){
+  const tip = tips[panelKey];
+  tip.classList.remove('show');
+}
+
+function attach(panelKey, data){
+  const panel = panels[panelKey];
+  data.forEach(b => {
+    const dot = makeDot(b, panel);
+    dot.addEventListener('mouseenter', () => {
+      if (pinned[panelKey] && pinned[panelKey] !== dot) return;
+      showTooltip(panelKey, dot, false);
+    });
+    dot.addEventListener('mouseleave', () => {
+      if (!pinned[panelKey]) hideLater(panelKey);
+    });
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasPinned = (pinned[panelKey] === dot);
+      if (wasPinned){
+        pinned[panelKey] = null;
+        hideNow(panelKey);
+      } else {
+        showTooltip(panelKey, dot, true);
+      }
+    });
+  });
+  panel.addEventListener('click', () => {
+    pinned[panelKey] = null;
+    hideNow(panelKey);
+  });
+}
+
+attach('top', bubblesTop);
+attach('bottom', bubblesBottom);
+</script>
 </body>
 </html>
